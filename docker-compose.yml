@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  api:
+    image: fabricioveronez/pedelogocatalogoapi
+    build:
+      context: .
+      dockerfile: src/PedeLogo.Catalogo.Api/Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - pedelogo
+    depends_on:
+      - pedelogo-mongodb
+    environment: 
+      Mongo__Host: "pedelogo-mongodb"
+      Mongo__User: "mongouser"
+      Mongo__Password: "mongopwd"
+      Mongo__Port: "27017"
+      Mongo__Database: "admin"
+
+  pedelogo-mongodb:
+    image: mongo:4.1
+    volumes:
+      - db_mongo:/data/db
+    networks:
+      - pedelogo
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopwd
+
+  # mongoexporter:
+  #   image: fabricioveronez/mongo_exporter
+  #   ports:
+  #     - "9216:9216" 
+  #   networks:
+  #     - pedelogo
+  #   environment: 
+  #     MONGODB_URI: "mongodb://mongouser:mongopwd@pedelogo-mongodb:27017"
+
+  # prometheus:
+  #   image: prom/prometheus    
+  #   volumes: 
+  #     - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+  #   ports:
+  #     - "9090:9090"
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - pedelogo
+
+  # grafana:
+  #   image: grafana/grafana:7.2.1
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - prometheus
+  #   networks:
+  #     - pedelogo
+
+volumes:
+  db_mongo:
+networks: 
+  pedelogo: 
+    driver: bridge      
